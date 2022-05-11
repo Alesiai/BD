@@ -47,15 +47,11 @@ namespace Poster.Views.AddNewItem
             {
                 DataGrid dg = sender as DataGrid;
                 row = dg.SelectedItems[0] as ItemsInOrder;
+
+                Order.Cost = Seed.getCost(Order.Id) - Order.Discount;
+                CostTextBlock.Text = Convert.ToString(Order.Cost);
             }
             catch { }
-        }
-
-
-        private void DataGridRow_MouseLeave(object sender, MouseEventArgs e)
-        {
-            Order.Cost = Seed.getCost(Order.Id) - Order.Discount;
-            CostTextBlock.Text = Convert.ToString(Order.Cost);
         }
 
         private void ProductList_SelectionChanged(object sender, SelectionChangedEventArgs e)

@@ -62,12 +62,6 @@
                     <DataGridTextColumn IsReadOnly="False" Header="Количество" Width="*" Binding="{Binding Path=Count}"/>
                     <DataGridTextColumn IsReadOnly="True" Header="Цена" Width="*" Binding="{Binding Path=Item.Cost}"/>
                 </DataGrid.Columns>
-
-                <DataGrid.Resources>
-                    <Style TargetType="DataGridRow">
-                        <EventSetter Event="MouseLeave" Handler="DataGridRow_MouseLeave"/>
-                    </Style>
-                </DataGrid.Resources>
             </DataGrid>
             <Button Grid.Row="1" Click="Button_Click" Content="Удалить" Margin="0,0,5,5" HorizontalAlignment="Right"  VerticalAlignment="Bottom"/>
 

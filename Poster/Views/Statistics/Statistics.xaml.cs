@@ -16,7 +16,8 @@ namespace Poster.Views.Statistics
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
-            MoneyTextBlock.Text = Seed.GetRevenue(FromDate.SelectedDate, ToDate.SelectedDate) + "руб";
+            MoneyTextBlock.Text = Seed.GetRevenue(FromDate.SelectedDate, ToDate.SelectedDate) + " руб";
+            CountTextBlock.Text = Seed.GetCountOfOrdersPerDey();
         }
     }
 }

@@ -20,7 +20,7 @@ namespace Poster.Views.Tables
             InitializeComponent();
             Seed.getListOfItem();
             Seed.getListOfUsers();
-            DataGridXAML.ItemsSource = Seed.getListOfOrders(DateTime.Today);
+            DataGridXAML.ItemsSource = Seed.getListOfOrders(DateTime.Today, DateTime.Today.AddDays(1));
         }
 
         private void Button_Click(object sender, RoutedEventArgs e)
@@ -55,7 +55,7 @@ namespace Poster.Views.Tables
             if (FromDate.SelectedDate != null || ToDate.SelectedDate != null)
                 DataGridXAML.ItemsSource = Seed.getListOfOrders(FromDate.SelectedDate, ToDate.SelectedDate);
             else
-                DataGridXAML.ItemsSource = Seed.getListOfOrders(DateTime.Today);
+                DataGridXAML.ItemsSource = Seed.getListOfOrders(DateTime.Today, DateTime.Today.AddDays(1));
         }
 
         private void Button_Click_2(object sender, RoutedEventArgs e)

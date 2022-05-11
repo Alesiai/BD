@@ -175,29 +175,106 @@ namespace Poster.Entities
             return list.ToList();
         }
 
-
-        //здесь началась ебала
         public static List<Order> getListOfOrders(DateTime? FromDate, DateTime? ToDate)
         {
-            DateTime dateTime = (DateTime)(ToDate != null ? ToDate : DateTime.Now);
-            return listOfOrders.Where(x => x.IsDeleted == false && x.Created >= FromDate && x.Created <= dateTime.AddDays(1)).ToList();
+
+            List<Order> orders = new List<Order>();
+            using (OracleConnection oc = new OracleConnection())
+            {
+                oc.ConnectionString = "DATA SOURCE=localhost:1521/orcl;USER ID=CAFFEUSER;PASSWORD=secret";
+                oc.Open();
+
+                string from = FromDate != null ? ("\'" + FromDate.Value.ToShortDateString() + "\'") : "null";
+                string to = ToDate != null ? ("\'" + ToDate.Value.ToShortDateString() + "\'") : "null";
+
+                string sql = "SELECT * FROM TABLE(CaffeUser.OrderInCaffeNS.GetOrderInCaffeFromDate(null, " + from + ", " + to + "))";
+
+                OracleDataAdapter oda = new OracleDataAdapter(sql, oc);
+                DataTable dt = new DataTable();
+                oda.Fill(dt);
+
+                foreach (DataRow dr in dt.Rows)
+                {
+                    Order order = new Order
+                    {
+                        Id = Convert.ToInt32(dr["IDORDER"]),
+                        Created = Convert.ToDateTime(dr["Created"]),
+                        Discount = Convert.ToDouble(dr["Discount"]),
+                        Cost = getCost(Convert.ToInt32(dr["IDORDER"])) - Convert.ToDouble(dr["Discount"]),
+                        IsDeleted = Convert.ToBoolean(dr["IsDeleted"]),
+                        User = GetUser(Convert.ToInt32(dr["IDUSER"])),
+                    };
+                    orders.Add(order);
+                }
+            }
+
+            return orders;
         }
-        public static List<Order> getListOfOrders(DateTime FromDate)
+
+        public static List<Order> getListOfOrdersForRevenue(DateTime? FromDate, DateTime? ToDate)
         {
-            return listOfOrders.Where(x => x.IsDeleted == false && x.Created >= FromDate && x.Created <= FromDate.AddDays(1)).ToList();
-        }
-        public static List<Order> getListOfOrders()
-        {
-            return listOfOrders.Where(x => x.IsDeleted == false).ToList();
+
+            List<Order> orders = new List<Order>();
+            using (OracleConnection oc = new OracleConnection())
+            {
+                oc.ConnectionString = "DATA SOURCE=localhost:1521/orcl;USER ID=CAFFEUSER;PASSWORD=secret";
+                oc.Open();
+
+                string from = FromDate != null ? ("\'" + FromDate.Value.ToShortDateString() + "\'") : "null";
+                string to = ToDate != null ? ("\'" + ToDate.Value.ToShortDateString() + "\'") : "null";
+
+                string sql = "SELECT * FROM TABLE(CaffeUser.OrderInCaffeNS.GetOrderInCaffeFromDate(null, " + from + ", " + to + "))";
+
+                OracleDataAdapter oda = new OracleDataAdapter(sql, oc);
+                DataTable dt = new DataTable();
+                oda.Fill(dt);
+
+                foreach (DataRow dr in dt.Rows)
+                {
+                    Order order = new Order
+                    {
+                        Id = Convert.ToInt32(dr["IDORDER"]),
+                        Discount = Convert.ToDouble(dr["Discount"]),
+                        Cost = getCost(Convert.ToInt32(dr["IDORDER"])) - Convert.ToDouble(dr["Discount"]),
+                    };
+                    orders.Add(order);
+                }
+            }
+
+            return orders;
         }
 
         public static List<ItemsInOrder> getListOfItemsInOrderById(int orderId)
         {
-            return listOfItemsInOrder.Where(x => x.OrderID == orderId).ToList();
+
+            List<ItemsInOrder> itemsInOrder = new List<ItemsInOrder>();
+            using (OracleConnection oc = new OracleConnection())
+            {
+                oc.ConnectionString = "DATA SOURCE=localhost:1521/orcl;USER ID=CAFFEUSER;PASSWORD=secret";
+                oc.Open();
+
+                string sql = "SELECT * FROM TABLE(CaffeUser.ItemsInOrderNS.GetListOfItemsInOrderById(null, " + Convert.ToString(orderId) + "))";
+
+                OracleDataAdapter oda = new OracleDataAdapter(sql, oc);
+                DataTable dt = new DataTable();
+                oda.Fill(dt);
+
+                foreach (DataRow dr in dt.Rows)
+                {
+                    ItemsInOrder order = new ItemsInOrder
+                    {
+                        Id = Convert.ToInt32(dr["ItemsInOrder"]),
+                        OrderID = Convert.ToInt32(dr["IdOrder"]),
+                        Count = Convert.ToInt32(dr["Count"]),
+                        Item = GetItem(Convert.ToInt32(dr["IdItem"]))
+                    };
+
+                    itemsInOrder.Add(order);
+                }
+            }
+
+            return itemsInOrder;
         }
-
-        //тут она закончилась
-
 
         public static User getUser(string login)
         {
@@ -212,7 +289,7 @@ namespace Poster.Entities
                 OracleDataAdapter oda = new OracleDataAdapter(sql, oc);
                 DataTable dt = new DataTable();
                 oda.Fill(dt);
-                
+
                 foreach (DataRow dr in dt.Rows)
                 {
 
@@ -231,19 +308,19 @@ namespace Poster.Entities
         }
 
         public static User GetUser(int userId)
-        {            
+        {
             User user = new User();
             using (OracleConnection oc = new OracleConnection())
             {
                 oc.ConnectionString = "DATA SOURCE=localhost:1521/orcl;USER ID=CAFFEUSER;PASSWORD=secret";
                 oc.Open();
 
-                string sql = "SELECT * FROM TABLE(CaffeUser.UserInCaffeNS.GetUserInCaffeById(1,"+ userId + "))";
+                string sql = "SELECT * FROM TABLE(CaffeUser.UserInCaffeNS.GetUserInCaffeById(1," + userId + "))";
 
                 OracleDataAdapter oda = new OracleDataAdapter(sql, oc);
                 DataTable dt = new DataTable();
                 oda.Fill(dt);
-                
+
                 foreach (DataRow dr in dt.Rows)
                 {
                     user.Id = Convert.ToInt32(dr["IDUSER"]);
@@ -280,7 +357,7 @@ namespace Poster.Entities
 
                     item.Id = Convert.ToInt32(dr["IDitem"]);
                     item.Name = Convert.ToString(dr["Name"]);
-                    item.Cost = Math.Round(Convert.ToDouble(dr["Cost"]),2);
+                    item.Cost = Math.Round(Convert.ToDouble(dr["Cost"]), 2);
                     item.IsDeleted = Convert.ToBoolean(dr["Isdeleted"]);
                 }
             }
@@ -288,20 +365,19 @@ namespace Poster.Entities
             return item;
         }
 
-        //не сделан
+        internal static List<Order> orders = new List<Order>();
         public static string GetRevenue(DateTime? FromDate, DateTime? ToDate)
         {
-            DateTime dateTime = (DateTime)(ToDate != null ? ToDate : DateTime.Now);
-            return "245";
-        }
-        
-        //не сделан
-        public static List<int> GetCountOfOrdersPerDey(DateTime fromDate, DateTime toDate)
-        {
-            return new List<int>();
+            orders = getListOfOrdersForRevenue(FromDate, ToDate);
+            return Convert.ToString(Math.Round(orders.Sum(x => x.Cost), 2));
         }
 
-        //проблема в хуй знает чем
+        //не сделан
+        public static string GetCountOfOrdersPerDey()
+        {
+            return Convert.ToString(orders.Count());
+        }
+
         public static void addUser(string name, string login, string password, DateTime? dateOfBirth, string phone, string status)
         {
             OracleConnection con = new OracleConnection();
@@ -311,15 +387,19 @@ namespace Poster.Entities
             OracleCommand cmd = con.CreateCommand();
             cmd.CommandText = "CaffeUser.UserInCaffeNS.InsertUserInCaffe";
             cmd.CommandType = CommandType.StoredProcedure;
-            
+
+            string created = DateTime.Now.ToShortDateString();
+
+            DateTime dateTime = (DateTime)(dateOfBirth != null ? dateOfBirth : DateTime.Now);
+            string birth = dateTime.ToShortDateString();
+
             cmd.Parameters.Add("Name", OracleDbType.Varchar2, 30).Value = name;
             cmd.Parameters.Add("Login", OracleDbType.Varchar2, 30).Value = login;
             cmd.Parameters.Add("Password", OracleDbType.Varchar2, 30).Value = password;
             cmd.Parameters.Add("Phone", OracleDbType.Varchar2, 30).Value = phone;
-            cmd.Parameters.Add("Created", OracleDbType.Varchar2, 30).Value = DateTime.Now;
-            cmd.Parameters.Add("DateOfBirth", OracleDbType.Varchar2, 30).Value = dateOfBirth;
+            cmd.Parameters.Add("Created", OracleDbType.Varchar2, 30).Value = created;
+            cmd.Parameters.Add("DateOfBirth", OracleDbType.Varchar2, 30).Value = birth;
             cmd.Parameters.Add("Status", OracleDbType.Varchar2, 30).Value = status == "admin" ? "1" : "0";
-            cmd.Parameters.Add("IsDeleted", OracleDbType.Decimal, 30).Value = 0;
             cmd.ExecuteNonQuery();
         }
 
@@ -352,7 +432,7 @@ namespace Poster.Entities
             cmd.Parameters.Add("Count", OracleDbType.Decimal, 30).Value = itemsInOrder.Count;
             cmd.ExecuteNonQuery();
         }
-      
+
         //проблема в хуй знает чем
         public static void addOrder(Order order)
         {
@@ -364,7 +444,7 @@ namespace Poster.Entities
             cmd.CommandText = "CaffeUser.OrderInCaffeNS.InsertOrderInCaffe";
             cmd.CommandType = CommandType.StoredProcedure;
             cmd.Parameters.Add("IdUser", OracleDbType.Int32, 30).Value = order.User.Id;
-            cmd.Parameters.Add("Created", OracleDbType.Varchar2, 30).Value = order.Created;
+            cmd.Parameters.Add("Created", OracleDbType.Varchar2, 30).Value = order.Created.ToShortDateString();
             cmd.Parameters.Add("Discount", OracleDbType.Decimal, 30).Value = order.Discount;
             cmd.Parameters.Add("IsDeleted", OracleDbType.Int32, 30).Value = 0;
             cmd.ExecuteNonQuery();
@@ -383,12 +463,15 @@ namespace Poster.Entities
             cmd.Parameters.Add("Name", OracleDbType.Varchar2, 30).Value = name;
             cmd.ExecuteNonQuery();
         }
-        //удалить два поя
+
         public static void updateUser(int id, string name, string login, string password, string phone, DateTime? dateOfBirth, string status)
         {
             OracleConnection con = new OracleConnection();
             con.ConnectionString = "DATA SOURCE=localhost:1521/orcl;USER ID=CAFFEUSER;PASSWORD=secret";
             con.Open();
+
+            DateTime dateTime = (DateTime)(dateOfBirth != null ? dateOfBirth : DateTime.Now);
+            string birth = dateTime.ToShortDateString();
 
             OracleCommand cmd = con.CreateCommand();
             cmd.CommandText = "CaffeUser.UserInCaffeNS.UpdateUserInCaffe";
@@ -398,7 +481,7 @@ namespace Poster.Entities
             cmd.Parameters.Add("Login_t", OracleDbType.Varchar2, 30).Value = login;
             cmd.Parameters.Add("Password_t", OracleDbType.Varchar2, 30).Value = password;
             cmd.Parameters.Add("Phone_t", OracleDbType.Varchar2, 30).Value = phone;
-            cmd.Parameters.Add("DateOfBirth_t", OracleDbType.Varchar2, 30).Value = dateOfBirth;
+            cmd.Parameters.Add("DateOfBirth_t", OracleDbType.Varchar2, 30).Value = birth;
             cmd.Parameters.Add("Status_t", OracleDbType.Varchar2, 30).Value = status == "admin" ? "1" : "0";
             cmd.ExecuteNonQuery();
         }
@@ -414,7 +497,7 @@ namespace Poster.Entities
             cmd.CommandType = CommandType.StoredProcedure;
             cmd.Parameters.Add("IdOrder_t", OracleDbType.Int32, 30).Value = order.Id;
             cmd.Parameters.Add("IdUser_t", OracleDbType.Int32, 30).Value = order.User.Id;
-            cmd.Parameters.Add("Discount_t", OracleDbType.Varchar2, 30).Value = order.Discount;
+            cmd.Parameters.Add("Discount_t", OracleDbType.Double, 30).Value = order.Discount;
             cmd.ExecuteNonQuery();
         }
 
@@ -440,7 +523,7 @@ namespace Poster.Entities
             OracleCommand cmd = con.CreateCommand();
             cmd.CommandText = "CaffeUser.UserInCaffeNS.DeleteUserInCaffeGeniusVersion";
             cmd.CommandType = CommandType.StoredProcedure;
-            cmd.Parameters.Add("IdUser", OracleDbType.Int32, 30).Value = userId;
+            cmd.Parameters.Add("IDUSER", OracleDbType.Int32, 30).Value = userId;
             cmd.ExecuteNonQuery();
         }
 
@@ -502,4 +585,3 @@ namespace Poster.Entities
 
     }
 }
- 
