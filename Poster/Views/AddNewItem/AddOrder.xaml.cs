@@ -21,6 +21,8 @@ namespace Poster.Views.AddNewItem
             Order.User = MainWindow.User;
             IsNew = isNew;
 
+            if (isNew) { Seed.addOrder(Order); }
+
             InitializeComponent();
 
             DataGridXAML.ItemsSource = Seed.getListOfItemsInOrderById(order.Id);
@@ -47,7 +49,8 @@ namespace Poster.Views.AddNewItem
             {
                 DataGrid dg = sender as DataGrid;
                 row = dg.SelectedItems[0] as ItemsInOrder;
-
+                
+                Seed.updateItemInorder(row.Id, row.Count);
                 Order.Cost = Seed.getCost(Order.Id) - Order.Discount;
                 CostTextBlock.Text = Convert.ToString(Order.Cost);
             }
@@ -86,14 +89,7 @@ namespace Poster.Views.AddNewItem
         {
             Order.Cost = Seed.getCost(Order.Id);
 
-            if (IsNew)
-            {
-                Seed.addOrder(Order);
-            }
-            else
-            {
-                Seed.updateOrder(Order);
-            }
+            Seed.updateOrder(Order);
             Close();
         }
 

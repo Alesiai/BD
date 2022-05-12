@@ -9,107 +9,6 @@ namespace Poster.Entities
 {
     internal class Seed
     {
-        internal static ObservableCollection<User> listOfUsers = new ObservableCollection<User>();
-        internal static ObservableCollection<Item> listOfItems = new ObservableCollection<Item>();
-        internal static ObservableCollection<Order> listOfOrders = new ObservableCollection<Order>();
-        internal static ObservableCollection<ItemsInOrder> listOfItemsInOrder = new ObservableCollection<ItemsInOrder>();
-
-        public static void SeedAllObjects()
-        {
-            listOfUsers.Add(new User
-            {
-                Id = 1,
-                Name = "Катя",
-                Login = "user",
-                Password = "1111",
-                DateOfBirth = Convert.ToDateTime("12.02.2002")
-            });
-
-            listOfUsers.Add(new User
-            {
-                Id = 2,
-                Name = "Admin",
-                Login = "admin",
-                Password = "1111",
-                Status = "admin",
-                DateOfBirth = Convert.ToDateTime("10.04.1998")
-            });
-
-            listOfItems.Add(
-                new Item
-                {
-                    Name = "Кофе",
-                    Cost = 1.35,
-                    Id = 1,
-                });
-            listOfItems.Add(
-                new Item
-                {
-                    Name = "Чай",
-                    Cost = 1.35,
-                    Id = 2,
-                });
-            listOfItems.Add(
-                new Item
-                {
-                    Name = "Булочка DELETED",
-                    Cost = 1.35,
-                    Id = 3,
-                    IsDeleted = true
-                });
-
-            listOfItemsInOrder.Add(new ItemsInOrder
-            {
-                Id = 1,
-                Item = listOfItems[0],
-                OrderID = 1,
-                Count = 2,
-            });
-
-            listOfItemsInOrder.Add(new ItemsInOrder
-            {
-                Id = 2,
-                Item = listOfItems[1],
-                OrderID = 1,
-                Count = 1,
-            });
-
-            listOfItemsInOrder.Add(new ItemsInOrder
-            {
-                Id = 3,
-                Item = listOfItems[2],
-                OrderID = 2,
-                Count = 2,
-            }); ;
-
-            var orderFirst = new Order
-            {
-                Cost = getCost(1),
-                Id = 1,
-                Created = DateTime.Now,
-                User = listOfUsers.Where(x => x.Id == 1).First(),
-            };
-            listOfOrders.Add(orderFirst);
-
-            var orderSecond = new Order
-            {
-                Cost = getCost(2),
-                Id = 2,
-                Created = DateTime.Now,
-                User = listOfUsers.Where(x => x.Id == 1).First(),
-            };
-            listOfOrders.Add(orderSecond);
-
-            var third = new Order
-            {
-                Cost = getCost(2),
-                Id = 3,
-                Created = DateTime.Now.AddDays(1),
-                User = listOfUsers.Where(x => x.Id == 1).First(),
-            };
-            listOfOrders.Add(third);
-        }
-
         public static List<User> getListOfUsers()
         {
             ObservableCollection<User> list = new ObservableCollection<User>();
@@ -136,7 +35,7 @@ namespace Poster.Entities
                         Phone = Convert.ToString(dr["Phone"]),
                         Created = Convert.ToDateTime(dr["Created"]),
                         DateOfBirth = Convert.ToDateTime(dr["DATEOFBIRTH"]),
-                        Status = Convert.ToString(dr["STATUS"]),
+                        Status = Convert.ToString(dr["STATUS"]) == "0"? "user" : "admin",
                     };
                     list.Add(user);
                 }
@@ -290,9 +189,10 @@ namespace Poster.Entities
                 DataTable dt = new DataTable();
                 oda.Fill(dt);
 
+                
+
                 foreach (DataRow dr in dt.Rows)
                 {
-
                     user.Id = Convert.ToInt32(dr["IDUSER"]);
                     user.Name = Convert.ToString(dr["Name"]);
                     user.Login = Convert.ToString(dr["LOGIN"]);
@@ -300,7 +200,7 @@ namespace Poster.Entities
                     user.Phone = Convert.ToString(dr["Phone"]);
                     user.Created = Convert.ToDateTime(dr["Created"]);
                     user.DateOfBirth = Convert.ToDateTime(dr["DATEOFBIRTH"]);
-                    user.Status = Convert.ToString(dr["STATUS"]);
+                    user.Status = Convert.ToString(dr["STATUS"]) == "0" ? "user" : "admin";
                 }
             }
 
@@ -472,6 +372,7 @@ namespace Poster.Entities
 
             DateTime dateTime = (DateTime)(dateOfBirth != null ? dateOfBirth : DateTime.Now);
             string birth = dateTime.ToShortDateString();
+            string statusfortable = status == "admin" ? "1" : "0";
 
             OracleCommand cmd = con.CreateCommand();
             cmd.CommandText = "CaffeUser.UserInCaffeNS.UpdateUserInCaffe";
@@ -482,7 +383,7 @@ namespace Poster.Entities
             cmd.Parameters.Add("Password_t", OracleDbType.Varchar2, 30).Value = password;
             cmd.Parameters.Add("Phone_t", OracleDbType.Varchar2, 30).Value = phone;
             cmd.Parameters.Add("DateOfBirth_t", OracleDbType.Varchar2, 30).Value = birth;
-            cmd.Parameters.Add("Status_t", OracleDbType.Varchar2, 30).Value = status == "admin" ? "1" : "0";
+            cmd.Parameters.Add("Status_t", OracleDbType.Varchar2, 30).Value = statusfortable;
             cmd.ExecuteNonQuery();
         }
         //удалить два поя
@@ -501,6 +402,20 @@ namespace Poster.Entities
             cmd.ExecuteNonQuery();
         }
 
+        public static void updateItemInorder(int id, int count)
+        {
+            OracleConnection con = new OracleConnection();
+            con.ConnectionString = "DATA SOURCE=localhost:1521/orcl;USER ID=CAFFEUSER;PASSWORD=secret";
+            con.Open();
+
+            OracleCommand cmd = con.CreateCommand();
+            cmd.CommandText = "CaffeUser.ItemsInOrderNS.UpdateItemsInOrderOfCount";
+            cmd.CommandType = CommandType.StoredProcedure;
+            cmd.Parameters.Add("ItemsInOrder", OracleDbType.Int32, 30).Value = id;
+            cmd.Parameters.Add("Count", OracleDbType.Int32, 30).Value = count;
+            cmd.ExecuteNonQuery();
+        }
+
         public static void deleteItem(int itemId)
         {
             OracleConnection con = new OracleConnection();
@@ -513,7 +428,7 @@ namespace Poster.Entities
             cmd.Parameters.Add("IdItem", OracleDbType.Int32, 30).Value = itemId;
             cmd.ExecuteNonQuery();
         }
-
+      
         public static void deleteUser(int userId)
         {
             OracleConnection con = new OracleConnection();
@@ -560,6 +475,29 @@ namespace Poster.Entities
             return cost;
         }
 
+        public static int getIdForOrder()
+        {
+            int count = 0;
+            using (OracleConnection oc = new OracleConnection())
+            {
+                oc.ConnectionString = "DATA SOURCE=localhost:1521/orcl;USER ID=CAFFEUSER;PASSWORD=secret";
+                oc.Open();
+
+                string sql = "select max(idorder) from orderincaffe";
+
+                OracleDataAdapter oda = new OracleDataAdapter(sql, oc);
+                DataTable dt = new DataTable();
+                oda.Fill(dt);
+
+                foreach (DataRow dr in dt.Rows)
+                {
+                    count = Convert.ToInt32(dr["max(idorder)"]);
+                }
+            }
+
+            return count + 1;
+        }
+
         public static int getIdForItemsInOrder()
         {
             int count = 0;
@@ -568,7 +506,7 @@ namespace Poster.Entities
                 oc.ConnectionString = "DATA SOURCE=localhost:1521/orcl;USER ID=CAFFEUSER;PASSWORD=secret";
                 oc.Open();
 
-                string sql = "select CaffeUser.OrderInCaffeNS.GetCountOfAllOrder from dual";
+                string sql = "select count(*) from itemsinorder";
 
                 OracleDataAdapter oda = new OracleDataAdapter(sql, oc);
                 DataTable dt = new DataTable();
@@ -576,7 +514,7 @@ namespace Poster.Entities
 
                 foreach (DataRow dr in dt.Rows)
                 {
-                    count = Convert.ToInt32(dr["GetCountOfAllOrder"]);
+                    count = Convert.ToInt32(dr["count(*)"]);
                 }
             }
 

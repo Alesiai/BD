@@ -16,6 +16,7 @@
         Title="Poster" WindowState="Maximized">
     <Grid Margin="0,0,0,0">
         <Frame Margin="60 0 0 0" x:Name="MainBar" NavigationUIVisibility="Hidden"></Frame>
+        <TextBlock Margin="10 0 500 10" VerticalAlignment="Bottom" Text="Сотрудник: " x:Name="UserName"></TextBlock>
         <materialDesign:DrawerHost
                 x:Name="DrawerHost"
                 HorizontalAlignment="Left" 
@@ -67,6 +68,15 @@
                         HorizontalAlignment="Left"
                         Style="{StaticResource MaterialDesignFlatButton}"
                         Content="Статистика"  Click="OpenStatistics"/>
+                    <Button
+                        x:Name="SaveToXml"
+                        Command="{x:Static materialDesign:DrawerHost.CloseDrawerCommand}"
+                        CommandParameter="{x:Static Dock.Left}"
+                        Margin="4"
+                        HorizontalAlignment="Left"
+                        VerticalAlignment="Bottom"
+                        Style="{StaticResource MaterialDesignFlatButton}"
+                        Content="Сохранить XML"  Click="SaveToXml_Click"/>
                     <Button
                         x:Name="Exit"
                         Command="{x:Static materialDesign:DrawerHost.CloseDrawerCommand}"

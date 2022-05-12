@@ -20,12 +20,12 @@
     >
     <Grid Height="434" VerticalAlignment="Bottom">
         <TextBlock Style="{StaticResource MaterialDesignHeadline5TextBlock}" Margin="172,14,176,380">
-                Карта товара
+                Карта сотрудника
         </TextBlock>
         <TextBox
              Margin="172,54,172,345"
               x:Name="NameTextBox"
-              materialDesign:HintAssist.Hint="Название"/>
+              materialDesign:HintAssist.Hint="Имя"/>
         <TextBox
             Margin="172,94,172,305"
             x:Name="LoginTextBox"

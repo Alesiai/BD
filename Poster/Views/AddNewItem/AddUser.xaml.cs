@@ -18,9 +18,11 @@ namespace Poster.Views.AddNewItem
             {
                 isNew = true;
                 DelateButton.Visibility = Visibility.Collapsed;
+                DateOfBirthText.SelectedDate = DateTime.Now;
             }
             else
             {
+                isNew = false;
                 Id = userId;
                 User user = Seed.GetUser(userId);
                 NameTextBox.Text = user.Name;

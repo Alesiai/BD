@@ -14,7 +14,7 @@ namespace Poster.Views.AddNewItem
         public AddPosition(int itemId)
         {
             InitializeComponent();
-            if (Seed.GetItem(itemId) == null)
+            if (itemId == 0)
             {
                 isNew = true;
                 DelateButton.Visibility = Visibility.Collapsed;

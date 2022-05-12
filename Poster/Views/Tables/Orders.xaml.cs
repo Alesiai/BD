@@ -25,7 +25,7 @@ namespace Poster.Views.Tables
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
-            AddOrder taskWindow = new AddOrder(new Order { Id = Seed.getIdForItemsInOrder() }, true);
+            AddOrder taskWindow = new AddOrder(new Order { Id = Seed.getIdForOrder() }, true);
             taskWindow.Show();
         }
 

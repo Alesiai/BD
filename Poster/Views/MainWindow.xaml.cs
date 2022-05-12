@@ -13,11 +13,6 @@ namespace Poster
         public bool times = true;
         public MainWindow()
         {
-            if (times)
-            {
-                Seed.SeedAllObjects();
-                times = false;
-            }
             InitializeComponent();
         }
 
